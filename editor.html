@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Browser IDE</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+background:#1e1e1e;
+font-family:monospace;
+color:white;
+overflow:hidden;
+}
+
+#app{
+display:flex;
+height:100vh;
+}
+
+/* sidebar */
+
+#sidebar{
+width:220px;
+background:#252526;
+padding:10px;
+overflow:auto;
+}
+
+#sidebar h2{
+font-size:15px;
+margin-bottom:10px;
+}
+
+.file{
+padding:6px;
+cursor:pointer;
+}
+
+.file:hover{
+background:#007acc;
+}
+
+/* main */
+
+#main{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+/* tabs */
+
+#tabs{
+display:flex;
+background:#1e1e1e;
+border-bottom:1px solid #333;
+}
+
+.tab{
+padding:10px 15px;
+cursor:pointer;
+}
+
+.tab.active{
+background:#007acc;
+}
+
+/* split */
+
+#split{
+flex:1;
+display:flex;
+}
+
+#editor{
+flex:1;
+}
+
+#resize{
+width:5px;
+background:#444;
+cursor:col-resize;
+}
+
+#preview{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+iframe{
+flex:1;
+border:none;
+background:white;
+}
+
+/* console */
+
+#console{
+height:120px;
+background:black;
+color:#00ff00;
+font-size:12px;
+padding:5px;
+overflow:auto;
+}
+
+/* run button */
+
+#run{
+position:absolute;
+top:10px;
+right:10px;
+padding:10px 20px;
+font-size:16px;
+background:#28a745;
+border:none;
+color:white;
+cursor:pointer;
+border-radius:5px;
+}
+
+#run:hover{
+background:#1f7e34;
+}
+
+/* theme */
+
+#theme{
+position:absolute;
+top:10px;
+right:140px;
+}
+
+/* status */
+
+#status{
+height:25px;
+background:#007acc;
+display:flex;
+align-items:center;
+padding-left:10px;
+font-size:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<button id="run" onclick="run()">Run ▶</button>
+
+<select id="theme" onchange="changeTheme()">
+<option value="dracula">Dark</option>
+<option value="material">Material</option>
+</select>
+
+<div id="app">
+
+<div id="sidebar">
+
+<h2><i class="fa fa-folder"></i> Explorer</h2>
+
+<div id="files"></div>
+
+<button onclick="createFile()">New File</button>
+
+<button onclick="saveProject()">Save Project</button>
+
+<button onclick="loadProject()">Load Project</button>
+
+</div>
+
+<div id="main">
+
+<div id="tabs"></div>
+
+<div id="split">
+
+<div id="editor"></div>
+
+<div id="resize"></div>
+
+<div id="preview">
+
+<iframe id="result"></iframe>
+
+<div id="console"></div>
+
+</div>
+
+</div>
+
+<div id="status">Browser IDE Ready</div>
+
+</div>
+
+</div>
+
+<script>
+
+let files={}
+let current=""
+let editor
+
+function createFile(){
+
+let name=prompt("File name")
+
+if(!name)return
+
+files[name]=""
+
+updateExplorer()
+openFile(name)
+
+}
+
+function updateExplorer(){
+
+let f=document.getElementById("files")
+
+f.innerHTML=""
+
+for(let name in files){
+
+let div=document.createElement("div")
+div.className="file"
+
+if(name.endsWith(".html")) div.innerHTML='<i class="fa fa-code"></i> '+name
+else if(name.endsWith(".css")) div.innerHTML='<i class="fa fa-paint-brush"></i> '+name
+else if(name.endsWith(".js")) div.innerHTML='<i class="fa fa-bolt"></i> '+name
+else div.innerHTML='<i class="fa fa-file"></i> '+name
+
+div.onclick=()=>openFile(name)
+
+f.appendChild(div)
+
+}
+
+}
+
+function openFile(name){
+
+current=name
+
+document.getElementById("tabs").innerHTML='<div class="tab active">'+name+'</div>'
+
+let mode="javascript"
+
+if(name.endsWith(".html")) mode="htmlmixed"
+if(name.endsWith(".css")) mode="css"
+
+if(editor) editor.toTextArea()
+
+let textarea=document.createElement("textarea")
+
+document.getElementById("editor").innerHTML=""
+
+document.getElementById("editor").appendChild(textarea)
+
+editor=CodeMirror.fromTextArea(textarea,{
+mode:mode,
+theme:"dracula",
+lineNumbers:true,
+autoCloseTags:true,
+autoCloseBrackets:true
+})
+
+editor.setValue(files[name])
+
+editor.on("change",()=>{
+files[name]=editor.getValue()
+})
+
+}
+
+function run(){
+
+let html=""
+let css=""
+let js=""
+
+for(let name in files){
+
+if(name.endsWith(".html")) html+=files[name]
+if(name.endsWith(".css")) css+=files[name]
+if(name.endsWith(".js")) js+=files[name]
+
+}
+
+css="<style>"+css+"</style>"
+
+js="<script>console.log=function(m){parent.document.getElementById('console').innerHTML+=m+'<br>'};"+js+"<\/script>"
+
+let iframe=document.getElementById("result").contentWindow.document
+
+iframe.open()
+iframe.write(html+css+js)
+iframe.close()
+
+document.getElementById("console").innerHTML=""
+
+}
+
+function saveProject(){
+
+localStorage.setItem("project",JSON.stringify(files))
+
+alert("Project saved")
+
+}
+
+function loadProject(){
+
+let data=localStorage.getItem("project")
+
+if(!data)return
+
+files=JSON.parse(data)
+
+updateExplorer()
+
+}
+
+function changeTheme(){
+
+let t=document.getElementById("theme").value
+
+editor.setOption("theme",t)
+
+}
+
+/* resize */
+
+let resize=document.getElementById("resize")
+
+resize.onmousedown=function(){
+
+document.onmousemove=function(e){
+
+let x=e.clientX
+
+document.getElementById("editor").style.flex="none"
+document.getElementById("editor").style.width=x+"px"
+
+}
+
+document.onmouseup=function(){
+document.onmousemove=null
+}
+
+}
+
+</script>
+
+</body>
+</html>
