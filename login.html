@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Login</title>
+<style>
+/* Reset & base */
+* {margin:0; padding:0; box-sizing:border-box; font-family: 'Roboto', sans-serif;}
+body, html {height:100%;}
+
+/* Video background */
+#bgVideo {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  z-index:-1;
+}
+
+/* Container */
+.login-container {
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+/* Card */
+.login-card {
+  background: rgba(255,255,255,0.1); /* glassmorphism effect */
+  backdrop-filter: blur(15px);
+  padding: 40px 30px;
+  border-radius: 15px;
+  width: 350px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.login-card h2 {margin-bottom:25px; color:white;}
+
+/* Input group */
+.input-group {position:relative; margin-bottom:20px; text-align:left;}
+.input-group label {display:block; margin-bottom:5px; font-weight:500; color:white;}
+.input-group input {
+  width:100%;
+  padding:12px 40px 12px 12px;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  background: rgba(255,255,255,0.2);
+  color:white;
+}
+.input-group input:focus {outline:none; background: rgba(255,255,255,0.3);}
+
+/* Toggle password */
+.toggle-password {
+  position:absolute;
+  right:10px; top:38px;
+  cursor:pointer;
+  font-size:18px;
+  color:white;
+}
+
+/* Button */
+button {
+  width:100%;
+  padding:12px;
+  border:none; border-radius:8px;
+  background:#667eea; color:white;
+  font-size:16px; font-weight:500;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover {background:#5a67d8;}
+
+/* Error message */
+.error-msg {color:#ff7675; font-size:14px; margin-top:10px; min-height:18px;}
+
+/* Footer */
+.login-footer {margin-top:20px;}
+.login-footer a {color:white; text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<video autoplay muted loop id="bgVideo">
+  <source src="videos/bg.mp4" type="video/mp4">
+</video>
+
+<div class="login-container">
+  <div class="login-card">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+      </div>
+      <button type="submit">Sign In</button>
+      <p class="error-msg" id="errorMsg"></p>
+    </form>
+    <div class="login-footer">
+      <p>Don't have an account? <a href="register.html">Sign Up</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dummy users
+const users = [
+  { email: "user@example.com", password: "123456" },
+  { email: "admin@example.com", password: "admin123" }
+];
+
+const loginForm = document.getElementById('loginForm');
+const errorMsg = document.getElementById('errorMsg');
+
+loginForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const user = users.find(u => u.email===email && u.password===password);
+  if(user){ errorMsg.textContent=""; alert("Login successful! 🎉"); }
+  else { errorMsg.textContent="Invalid email or password."; }
+});
+
+function togglePassword(){
+  const passwordInput = document.getElementById('password');
+  passwordInput.type = passwordInput.type==="password"?"text":"password";
+}
+</script>
+</body>
+</html>

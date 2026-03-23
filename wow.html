@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Web Learning</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<video autoplay muted loop id="bgVideo">
+<source src="videos/ab.mp4" type="video/mp4">
+</video>
+
+<img src="images/images.png" id="plane">
+
+<nav class="navbar">
+
+<h2>WebLearn</h2>
+
+<div class="menu" id="menu">
+
+<a href="wow.html">Home</a>
+<a href="login.html">Login</a>
+<a href="register.html">Register</a>
+<a href="edit/editor.html">Editor</a>
+
+<button onclick="toggleMode()">🌙</button>
+
+</div>
+
+<div class="hamburger" onclick="toggleMenu()">☰</div>
+
+</nav>
+
+<section class="gallery">
+<h2>PROJECTS</h2>
+
+<div class="projects">
+
+<a href="html.html" class="card">
+<img src="images/html.png">
+<div class="overlay">
+<h3>HTML Project</h3>
+<p>Simple HTML website structure</p>
+</div>
+</a>
+
+<a href="css.html" class="card">
+<img src="images/css.png">
+<div class="overlay">
+<h3>CSS Project</h3>
+<p>Animation and responsive design</p>
+</div>
+</a>
+
+<a href="js.html" class="card">
+<img src="images/js.png">
+<div class="overlay">
+<h3>JavaScript Project</h3>
+<p>Interactive web applications</p>
+</div>
+</a>
+
+</div>
+</section>
+
+<script src="script.js"></script>
+
+</body>
+</html>
